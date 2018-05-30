@@ -5,13 +5,17 @@ import { throwError } from './ErrorThrower';
 
 
 class S3Client {
-    static async uploadFile(file, config) {
+    static async uploadFile(file, config, newname) {
 
         // Error Thrower :x:
         throwError(config, file)
 
         const fd = new FormData();
-        const key = `${config.dirName ? config.dirName + "/" : ""}${file.name}`;
+        let key = `${config.dirName ? config.dirName + "/" : ""}${file.name}`;
+        if (newname) {
+            key = `${config.dirName ? config.dirName + "/" : ""}${newname}`;
+        }
+
         const url = `https://${config.bucketName}.s3.amazonaws.com/`;
         fd.append("key", key);
         fd.append("acl", "public-read");
@@ -42,14 +46,48 @@ class S3Client {
 
         const data = await fetch(url, params);
         if (!data.ok) return Promise.reject(data);
-        return Promise.resolve({
-            bucket: config.bucketName,
-            key: `${config.dirName ? config.dirName + "/" : ""}${file.name}`,
-            location: `${url}${config.dirName ? config.dirName + "/" : ""}${
-                file.name
-                }`,
-            result: data
-        });
+        if (newname) {
+            return Promise.resolve({
+                bucket: config.bucketName,
+                key: `${config.dirName ? config.dirName + "/" : ""}${newname}`,
+                location: `${url}${config.dirName ? config.dirName + "/" : ""}${
+                    file.name
+                    }`,
+                result: data
+            });
+        } else {
+            return Promise.resolve({
+                bucket: config.bucketName,
+                key: `${config.dirName ? config.dirName + "/" : ""}${file.name}`,
+                location: `${url}${config.dirName ? config.dirName + "/" : ""}${
+                    file.name
+                    }`,
+                result: data
+            });
+        }
+
+        if (newname) {
+            return Promise.resolve({
+                bucket: config.bucketName,
+                key: `${config.dirName ? config.dirName + "/" : ""}${newname}`,
+                location: `${url}${config.dirName ? config.dirName + "/" : ""}${
+                    file.name
+                    }`,
+                result: data
+            });
+        } else {
+            return Promise.resolve({
+                bucket: config.bucketName,
+                key: `${config.dirName ? config.dirName + "/" : ""}${file.name}`,
+                location: `${url}${config.dirName ? config.dirName + "/" : ""}${
+                    file.name
+                    }`,
+                result: data
+            });
+        }
+
+
+
     }
     static async deleteFile(fileName, config) {
 
